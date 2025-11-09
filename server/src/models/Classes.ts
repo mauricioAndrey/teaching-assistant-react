@@ -39,10 +39,44 @@ export class Classes {
       throw new Error('Class not found');
     }
 
-    // Update fields of the existing class object
+    // Update basic fields of the existing class object
     existingClass.setTopic(updatedClass.getTopic());
     existingClass.setSemester(updatedClass.getSemester());
     existingClass.setYear(updatedClass.getYear());
+    
+    // Update enrollments: merge existing with updated enrollments
+    const updatedEnrollments = updatedClass.getEnrollments();
+    const existingEnrollments = existingClass.getEnrollments();
+    
+    // Process each updated enrollment
+    updatedEnrollments.forEach(updatedEnrollment => {
+      const studentCPF = updatedEnrollment.getStudent().getCPF();
+      const existingEnrollment = existingClass.findEnrollmentByStudentCPF(studentCPF);
+      
+      if (existingEnrollment) {
+        // Update existing enrollment's evaluations
+        const updatedEvaluations = updatedEnrollment.getEvaluations();
+        updatedEvaluations.forEach(evaluation => {
+          existingEnrollment.addOrUpdateEvaluation(evaluation.getGoal(), evaluation.getGrade());
+        });
+      } else {
+        // Add new enrollment that doesn't exist yet
+        try {
+          existingClass.addEnrollment(updatedEnrollment.getStudent());
+          const newEnrollment = existingClass.findEnrollmentByStudentCPF(studentCPF);
+          if (newEnrollment) {
+            // Copy over evaluations from updated enrollment
+            const updatedEvaluations = updatedEnrollment.getEvaluations();
+            updatedEvaluations.forEach(evaluation => {
+              newEnrollment.addOrUpdateEvaluation(evaluation.getGoal(), evaluation.getGrade());
+            });
+          }
+        } catch (error) {
+          // Enrollment already exists, this shouldn't happen but handle gracefully
+          console.warn(`Could not add enrollment for student ${studentCPF}: ${error}`);
+        }
+      }
+    });
     
     return existingClass;
   }
