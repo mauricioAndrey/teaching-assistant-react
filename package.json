@@ -16,6 +16,7 @@
     "lint": "npm run lint --prefix client"
   },
   "devDependencies": {
+    "@types/recharts": "^1.8.29",
     "concurrently": "^8.2.2"
   },
   "keywords": [
@@ -31,5 +32,8 @@
   "workspaces": [
     "client",
     "server"
-  ]
+  ],
+  "dependencies": {
+    "recharts": "^3.4.1"
+  }
 }

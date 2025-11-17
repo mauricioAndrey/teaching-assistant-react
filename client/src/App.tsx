@@ -7,9 +7,10 @@ import StudentList from './components/StudentList';
 import StudentForm from './components/StudentForm';
 import Evaluations from './components/Evaluations';
 import Classes from './components/Classes';
+import StudentsAnalytics from './components/StudentsAnalytics';
 import './App.css';
 
-type TabType = 'students' | 'evaluations' | 'classes';
+type TabType = 'students' | 'evaluations' | 'classes' | 'analytics';
 
 const App: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
@@ -19,6 +20,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('students');
+  const [selectedDiscipline, setSelectedDiscipline] = useState<string>('');
 
   const loadStudents = useCallback(async () => {
     try {
@@ -143,6 +145,12 @@ const App: React.FC = () => {
           >
             Classes
           </button>
+          <button
+            className={`tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            Analytics
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -211,6 +219,37 @@ const App: React.FC = () => {
               onClassDeleted={handleClassDeleted}
               onError={handleError}
             />
+          )}
+
+          {activeTab === 'analytics' && (
+            <div>
+              <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f0f9ff', borderRadius: '8px' }}>
+                <h3 style={{ marginTop: 0 }}>Selecione uma Disciplina:</h3>
+                <select
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    fontSize: '16px',
+                    borderRadius: '4px',
+                    border: '1px solid #ccc'
+                  }}
+                  value={selectedDiscipline}
+                  onChange={(e) => setSelectedDiscipline(e.target.value)}
+                >
+                  <option value="">-- Escolha uma disciplina --</option>
+                  {/* Extract unique disciplines from classes */}
+                  {Array.from(new Set(classes.map(c => c.topic))).map(topic => (
+                    <option key={topic} value={topic}>
+                      {topic}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {selectedDiscipline && (
+                <StudentsAnalytics discipline={selectedDiscipline} />
+              )}
+            </div>
           )}
         </div>
       </main>
