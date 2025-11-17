@@ -8,7 +8,6 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
 } from 'recharts';
 import ClassService from '../services/ClassService';
 import {
@@ -43,12 +42,15 @@ const StudentsAnalytics: React.FC<StudentsAnalyticsProps> = ({ discipline }) => 
 
         // Buscar todas as turmas da API
         const allClasses = await ClassService.getAllClasses();
+        console.log('📚 Classes recebidas da API:', allClasses);
 
         // Gerar analytics para a disciplina específica
         const analyticsData = generateAnalyticsForDiscipline(discipline, allClasses);
+        console.log('📊 Analytics gerados:', analyticsData);
 
         // Transformar para formato do gráfico
         const transformedData = transformToChartData(analyticsData);
+        console.log('📈 Dados transformados para o gráfico:', transformedData);
 
         setChartData(transformedData);
       } catch (err) {
@@ -97,11 +99,14 @@ const StudentsAnalytics: React.FC<StudentsAnalyticsProps> = ({ discipline }) => 
       </h2>
       
       <div style={{ width: '100%', height: 400 }}>
-        <ResponsiveContainer>
-          <LineChart
-            data={chartData}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
+        {/* Avoid ResponsiveContainer due to React context mismatch in some setups.
+            Use fixed pixel width for reliable rendering during testing. */}
+        <LineChart
+          width={900}
+          height={400}
+          data={chartData}
+          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="period" 
@@ -163,7 +168,6 @@ const StudentsAnalytics: React.FC<StudentsAnalyticsProps> = ({ discipline }) => 
               name="REP. F (Falta)"
             />
           </LineChart>
-        </ResponsiveContainer>
       </div>
 
       {/* Legenda explicativa */}

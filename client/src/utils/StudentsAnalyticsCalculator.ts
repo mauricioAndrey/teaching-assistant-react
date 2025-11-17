@@ -49,19 +49,30 @@ interface EnrollmentWithGrades extends Enrollment {
  * Retorna a categoria do aluno ou null se não houver dados válidos
  */
 function classifyStudent(enrollment: Enrollment): StudentCategory | null {
-  const enrollmentWithGrades = enrollment as EnrollmentWithGrades;
+  // Acessar diretamente as propriedades do objeto (vem como JSON plain object)
+  const enrollmentData = enrollment as any;
   
-  const reprovadoPorFalta = enrollmentWithGrades.reprovadoPorFalta ?? false;
-  const mediaPosFinal = enrollmentWithGrades.mediaPosFinal ?? 0;
-  const mediaPreFinal = enrollmentWithGrades.mediaPreFinal ?? 0;
+  const reprovadoPorFalta = enrollmentData.reprovadoPorFalta ?? false;
+  const mediaPosFinal = enrollmentData.mediaPosFinal ?? 0;
+  const mediaPreFinal = enrollmentData.mediaPreFinal ?? 0;
+
+  console.log('🔍 Classificando aluno:', {
+    student: enrollmentData.student?.name || enrollmentData.student?.cpf,
+    mediaPreFinal,
+    mediaPosFinal,
+    reprovadoPorFalta,
+    enrollmentKeys: Object.keys(enrollmentData)
+  });
 
   // 1. Verificar reprovação por falta (prioridade máxima)
   if (reprovadoPorFalta) {
+    console.log('   → REP. F (Falta)');
     return 'failedByAttendance';
   }
 
   // 2. Aprovado pela média (não precisou da prova final)
   if (mediaPreFinal >= 7.0) {
+    console.log('   → APV. M (Média ≥ 7.0)');
     return 'approvedByAverage';
   }
 
@@ -69,13 +80,16 @@ function classifyStudent(enrollment: Enrollment): StudentCategory | null {
   if (mediaPreFinal >= 3.0 && mediaPreFinal < 7.0) {
     // Aprovado pela nota final
     if (mediaPosFinal >= 5.0) {
+      console.log('   → APV. N (Final ≥ 5.0)');
       return 'approvedByGrade';
     }
     // Reprovado pela nota final
+    console.log('   → REP. N (Final < 5.0)');
     return 'failedByGrade';
   }
 
   // 4. Reprovado pela média baixa (média pré-final < 3.0)
+  console.log('   → REP. M (Média < 3.0)');
   return 'failedByAverage';
 }
 
@@ -85,6 +99,13 @@ function classifyStudent(enrollment: Enrollment): StudentCategory | null {
 function calculateClassStatistics(classObj: Class): CategoryStatistics {
   const enrollments = classObj.enrollments || [];
   
+  console.log('📊 Calculando estatísticas para turma:', {
+    topic: classObj.topic,
+    year: classObj.year,
+    semester: classObj.semester,
+    totalEnrollments: enrollments.length
+  });
+
   const stats: CategoryStatistics = {
     approvedByAverage: 0,
     failedByAverage: 0,
@@ -102,6 +123,7 @@ function calculateClassStatistics(classObj: Class): CategoryStatistics {
     }
   });
 
+  console.log('📈 Estatísticas finais:', stats);
   return stats;
 }
 
